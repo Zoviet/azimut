@@ -1,5 +1,9 @@
 # Sun's azimuth calc
 
+The height of the Sun (altitude) is the arc of a vertical circle from the mathematical horizon to the central point of the solar disk (the angle between the plane of the mathematical horizon and the direction to the center of the Sun). The height is calculated from 0 ° to 90 °.
+
+The azimuth of the Sun (azimut) is an arc in the plane of the mathematical horizon from the point of the north to the vertical circle of the Sun. Azimuth is calculated in the direction of the daily rotation of the celestial sphere, i.e. clockwise in the northern hemisphere and counterclockwise in the southern hemisphere, from the point of the north in the range from 0 ° to 360 °.
+
 ## Using
 
 Get the sun azimuth [deg] and altitude above the horizon [deg]:
