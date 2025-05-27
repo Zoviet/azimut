@@ -13,8 +13,8 @@ local function cir(x)
 end
 
 local function days(utc)
-	utc = date(utc):toutc() or date():toutc()
-	local d = date.diff(utc, date(2000, 1, 1):toutc())
+	utc = date(utc) or date():toutc()
+	local d = date.diff(utc, date(2000, 1, 1))
 	local UT = (d:gethours()+(d:getminutes()/60))/24
 	return math.floor(d:spandays())+UT,UT
 end
