@@ -4,19 +4,23 @@ local _M = {}
 
 local azimut,altitude,w,e,m,ecliptic,Ee,longt,RA,DEC,GMST0,SIDTIME,HA
 
-local pi = 3.14159265358979323846 
-local rad_deg = 180.0/pi
-local deg_rad = pi/180.0
-
-local function cir(x)
-	return x - math.floor (x / 360.0) * 360.0;
-end
+local rad = math.rad
+local deg = math.deg
+local floor = math.floor
+local cir = function(x) return x - math.floor (x / 360.0) * 360.0 end
+local cos = function(d) return math.cos(rad(d)) end
+local acos = function(d) return deg(math.acos(d)) end
+local sin = function(d) return math.sin(rad(d)) end
+local asin = function(d) return deg(math.asin(d)) end
+local tan = function(d) return math.tan(rad(d)) end
+local atan = function(d) return deg(math.atan(rad(d))) end
+local atan2 = function(x,y) return deg(math.atan2(rad(x),rad(y))) end
 
 local function days(utc)
 	utc = date(utc) or date():toutc()
 	local d = date.diff(utc, date(2000, 1, 1))
-	local UT = (d:gethours()+(d:getminutes()/60))/24
-	return math.floor(d:spandays())+UT,UT
+	local UT = utc:gethours()+(utc:getminutes()/60)
+	return floor(d:spandays())+UT/24,UT
 end
 
 local function solar(utc,lat,lon)
@@ -25,36 +29,36 @@ local function solar(utc,lat,lon)
 	e = 0.016709-0.000000001151*days     --эксцентриситет орбиты
 	m = cir(356.0470 + 0.9856002585*days)    --средняя аномалия
 	ecliptic = 23.4393-0.0000003563*days -- наклон плоскости эклиптики	
-	Ee = m+(180.0/pi)*e*math.sin(m*deg_rad)*(1+e*math.cos(m*deg_rad)) --эксцентрическая аномалия
-	local L = cir(w+m)	
-	local x = math.cos(Ee*deg_rad)-e
-	local y = math.sin(Ee*deg_rad)*math.sqrt(1-e*e)
+	Ee = m+e*sin(m)*(1+e*cos(m)) --эксцентрическая аномалия	
+	local L = cir(w+m) 
+	local x = cos(Ee)-e
+	local y = sin(Ee)*math.sqrt(1-e*e)
 	local r = math.sqrt(x*x+y*y)
-	local v = math.atan2(y,x)*rad_deg
+	local v = atan2(y,x)
 	longt = cir(v+w) --эклиптическая долгота Солнца 
-	local x = r*math.cos(longt*deg_rad)
-	local y = r*math.sin(longt*deg_rad)
-	local z = 0.0
+	local x = r*cos(longt)
+	local y = r*sin(longt)
+	local z = 0 
 	local xequat = x
-	local yequat = y*math.cos(deg_rad*ecliptic)-z*math.sin(deg_rad*ecliptic)
-	local zequat = y*math.sin(deg_rad*ecliptic)+z*math.cos(deg_rad*ecliptic)
+	local yequat = y*cos(ecliptic)-z*sin(ecliptic)
+	local zequat = y*sin(ecliptic)+z*cos(ecliptic)
 	-- экваториальные координаты Солнца
-	RA  = math.atan2(yequat,xequat)*rad_deg -- прямое восхождение
-	DEC = math.asin(zequat/r)*rad_deg -- склонение
+	RA  = atan2(yequat,xequat)-- прямое восхождение
+	DEC = asin(zequat/r) -- склонение
 	--расчет азимутальных координат 
 	GMST0=L/15.0+12.0 -- звездное время для гринвичского меридиана 
 	SIDTIME = GMST0+UT+lon/15.0   -- Звездное время
 	if SIDTIME<0 then SIDTIME = SIDTIME+24.0 end
 	if SIDTIME>24 then SIDTIME = SIDTIME-24.0 end
 	HA = SIDTIME*15.0-RA --Часовой угол
-	local xx = math.cos(HA*deg_rad)*math.cos(DEC*deg_rad)
-	local yy = math.sin(HA*deg_rad)*math.cos(DEC*deg_rad)
-	local zz = math.sin(DEC*deg_rad)
-	local Xhor = xx*math.sin(lat*deg_rad)-zz*math.cos(lat*deg_rad)
+	local xx = cos(HA)*cos(DEC)
+	local yy = sin(HA)*cos(DEC)
+	local zz = sin(DEC)
+	local Xhor = xx*sin(lat)-zz*cos(lat)
 	local Yhor=yy;
-	local Zhor=xx*math.cos(lat*deg_rad)+zz*math.sin(lat*deg_rad)
-	azimut = math.atan2(Yhor,Xhor)*rad_deg+180 -- азимут Солнца [град]
-	altitude = math.asin(Zhor)*rad_deg -- высота Солнца над горизонтом [град]
+	local Zhor=xx*cos(lat)+zz*sin(lat)
+	azimut = atan2(Yhor,Xhor)+180 -- азимут Солнца [град]
+	altitude = asin(Zhor) -- высота Солнца над горизонтом [град]
 end
 
 function _M.get(utc,lat,lon)

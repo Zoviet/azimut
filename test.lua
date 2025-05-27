@@ -1,6 +1,4 @@
 local azimut = require('azimut')
-local json = require('cjson')
 
-print(azimut.get(nil,54.5,54.2))
+print(azimut.get('2025-05-27 09:11:14+04',54.314192, 48.403132))
 
-print(json.encode(azimut.data(nil,54.5,54.2)))
